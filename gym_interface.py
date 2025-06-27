@@ -32,6 +32,7 @@ from gymnasium import ObservationWrapper, spaces
 from stable_baselines3 import PPO
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecMonitor
+from src.observations import observation_factory
 from stable_baselines3.common.callbacks import BaseCallback
 from tqdm import trange
 import matplotlib.pyplot as plt                              
@@ -209,7 +210,7 @@ class EpisodeStats(BaseCallback):
         return True
 
 # ##################### 5. make vector env #######################
-def make_env(rank):
+def make_env(rank, obs_type=None):
     def _init():
         #e=gym.make("f110_gym:f110-v0",map_path=F1_MAP_YAML,
         #           timestep=TIMESTEP,num_agents=1,render_mode=None)
@@ -217,15 +218,16 @@ def make_env(rank):
         e = gym.make("f1tenth_gym:f1tenth-v0", map_path=F1_MAP_YAML,
                    timestep=TIMESTEP, num_agents=1, render_mode=None, obs_type="direct")    
         #e = StripAgentID(e);
-        e = DirectFlatObs(e); 
+        e = DirectFlatObs(e);
+        e.obs_helper = observation_factory(e, obs_type)
 
         obs, _ = e.reset(seed=0)
         assert set(obs.keys()) == {"scan", "linear_vel", "steering_angle"}
         print("✓ flattened obs shapes:",
             obs["scan"].shape, obs["linear_vel"].shape, obs["steering_angle"].shape)
         
-        e= FrictionRand(e); 
-        e=ProgressReward(e); 
+        e= FrictionRand(e);
+        e=ProgressReward(e);
         e.reset(seed=rank); 
         return e
     return _init
@@ -234,7 +236,7 @@ def make_env(rank):
 #vec = VecMonitor(SubprocVecEnv([make_env(i) for i in range(N_ENVS)]))
 
 from stable_baselines3.common.vec_env import DummyVecEnv
-vec = VecMonitor(DummyVecEnv([make_env(0)]))
+vec = VecMonitor(DummyVecEnv([make_env(0, None)]))
 
 
 ######################## 6. PPO ################################
