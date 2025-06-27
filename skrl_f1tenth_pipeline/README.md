@@ -11,6 +11,9 @@ This project implements an end-to-end reinforcement learning pipeline for the F1
 - `src/skrl_qler/models.py`: Currently empty. This file can be used for defining additional models or utilities related to the project.
 
 - `src/skrl_qler/gym_model.py`: Currently empty. This file can be used for defining gym-related models or utilities.
+- `src/observations.py`: Provides helper classes for building observations. It includes a
+  `VectorObservation` helper for concatenating features like lidar `scan` and vehicle pose
+  into a flat vector.
 
 - `src/skrl_qler/skrl_f1tenth_pipeline.py`: Integrates the end-to-end pipeline from `gym_interface.py` using the SKRL framework and the model architecture from `train.py`. It sets up the F1Tenth gym environment, defines the necessary wrappers, and implements the training loop using SKRL.
 
@@ -34,6 +37,14 @@ python src/skrl_qler/train.py --npz <path_to_npz_files> --sup_model <path_to_sup
 ```
 
 3. Monitor the training process through the generated plots and logs.
+
+## Observation Types
+
+`src/observations.py` defines small utilities for customizing observations. The
+`VectorObservation` helper can gather features such as `scan`, `pose_x`, or
+`pose_y` from the environment and return them as a single flat vector. Use
+`observation_factory(env, "vector")` when constructing an environment to enable
+this behaviour.
 
 ## Contributing
 
